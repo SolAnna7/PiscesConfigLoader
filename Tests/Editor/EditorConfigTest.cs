@@ -1,18 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using GuildTest.Scripts.Config;
 using NUnit.Framework;
-using SnowFlakeGamesAssets.PiscesConfigLoader;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils.Expression;
-using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
-namespace _Tests.Editor
+namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
 {
     public class EditorConfigTest
     {

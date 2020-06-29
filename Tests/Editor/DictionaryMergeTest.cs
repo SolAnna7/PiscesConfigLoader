@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using GuildTest.Scripts.Config;
 using NUnit.Framework;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils;
 
-namespace _Tests.Editor
+namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
 {
     public class DictionaryMergeTest
     {
