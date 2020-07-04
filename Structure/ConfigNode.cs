@@ -22,7 +22,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         {
             if (_root == null)
             {
-                throw new Exception("Node has no child elements!");
+                throw new Exception($"Node has no child elements! (path:{path})");
             }
 
             return new QueryResult(_root.ReadPath(path.Path), path);

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
@@ -16,5 +17,10 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         public ConfigPath Add(params string[] steps) => new ConfigPath(Path.Concat(steps).ToArray());
 
         public static ConfigPath Empty => new ConfigPath();
+
+        public override string ToString()
+        {
+            return String.Join("->",Path);
+        }
     }
 }
