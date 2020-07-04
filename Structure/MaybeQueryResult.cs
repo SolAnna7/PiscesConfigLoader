@@ -20,6 +20,11 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             if (IsPresent)
                 actionIfPresent(_queryResult);
         }
+        
+        public TR IfPresentGet<TR>(Func<QueryResult, TR> actionIfPresent, TR defaultValue)
+        {
+            return IsPresent ? actionIfPresent(_queryResult) : defaultValue;
+        }
 
         public void IfPresent(Action<QueryResult> actionIfPresent, Action actionIfNotPresent)
         {
