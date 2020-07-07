@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using _Core.Scripts.Utils;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
@@ -50,6 +51,14 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         public IEnumerable<string> GetKeys()
         {
             return _root.Keys.Select(k => k.ToString());
+        }
+
+        public ConfigNode UnionWith(ConfigNode other)
+        {
+            Dictionary<object, object> dict = new Dictionary<object, object>();
+            _root.Keys.ForEach(k => dict.Add(k, _root[k]));
+            other._root.Keys.ForEach(k => dict.Add(k, other._root[k]));
+            return new ConfigNode(dict, new ConfigPath("#UNION#"));
         }
     }
 }

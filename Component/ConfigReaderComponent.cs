@@ -9,6 +9,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Component
         private static string ConfigRootPathBaseValue => "Config";
         public string ConfigPath = ConfigRootPathBaseValue;
 
+        public bool initializeAtAwake = false;
         private void Reset()
         {
             ConfigPath = ConfigRootPathBaseValue;
@@ -18,6 +19,8 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Component
         private void Awake()
         {
             GameConfig.RegisterReader(this);
+            if(initializeAtAwake)
+                GameConfig.InitConfig();
         }
 
         public IEnumerable<TextAsset> LoadConfigAssets() => Resources.LoadAll<TextAsset>(ConfigPath);
