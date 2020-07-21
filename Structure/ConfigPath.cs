@@ -18,9 +18,6 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
 
         public static ConfigPath Empty => new ConfigPath();
 
-        public override string ToString()
-        {
-            return String.Join("->",Path);
-        }
+        public override string ToString() => string.Join(".",Path);
     }
 }
