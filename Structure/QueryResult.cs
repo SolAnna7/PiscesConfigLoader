@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils.Expression;
 using UnityEngine;
+using Random = System.Random;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
 {
@@ -12,6 +13,28 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         public bool HasValue { get; } = true;
 
         private object _value;
+
+        private static readonly ExpressionParser ExpressionParser = new ExpressionParser();
+        private static readonly Random Random = new Random(0);
+
+        static QueryResult()
+        {
+            ExpressionParser.AddFunc("rand", inputs =>
+            {
+                if (inputs == null)
+                    throw new ArgumentNullException(nameof(inputs));
+                if (inputs.Length != 2)
+                    throw new ArgumentException("Function random should have only two input parameter.", nameof(inputs));
+
+                float min = (float) inputs[0];
+                float max = (float) inputs[1];
+
+                if (min > max)
+                    throw new ArgumentException("The first parameter should be less then the second", nameof(inputs));
+
+                return Random.NextDouble() * (max - min) + min;
+            });
+        }
 
         public QueryResult(object value, ConfigPath path)
         {
@@ -65,13 +88,12 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
 
         public List<ConfigNode> AsNodeList()
         {
-            var objects = _value as IList<object>;
-            if (objects != null)
+            if (_value is IList<object> objects)
             {
                 List<ConfigNode> result = new List<ConfigNode>();
-                for (var index = 0; index < ((IList<object>) _value).Count; index++)
+                for (var index = 0; index < objects.Count; index++)
                 {
-                    var x = ((IList<object>) _value)[index];
+                    var x = objects[index];
                     result.Add(new ConfigNode(x, Path.Add(index.ToString())));
                 }
 
@@ -85,7 +107,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         {
             var asString = AsString();
 
-            var expression = GameConfig.ExpressionParser.EvaluateExpression(asString);
+            var expression = ExpressionParser.EvaluateExpression(asString);
 
             return new ConfigExpressionBuilder(expression);
         }
@@ -99,14 +121,14 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             {
                 return new RangeI(int.Parse(nums[0]), int.Parse(nums[1]));
             }
+
             // a sima számokat is beparsoljuk
             if (nums.Length == 1)
             {
                 return new RangeI(int.Parse(nums[0]), int.Parse(nums[0]));
             }
-            
-            throw new Exception($"Unable to parse RangeI: {asString}");
 
+            throw new Exception($"Unable to parse RangeI: {asString}");
         }
 
         public Color AsColor()

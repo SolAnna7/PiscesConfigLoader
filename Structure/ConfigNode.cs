@@ -12,10 +12,9 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
     {
         private readonly IDictionary<object, object> _root;
 
-        public ConfigNode(object value, ConfigPath path) : base(value, path)
+        internal ConfigNode(object value, ConfigPath path) : base(value, path)
         {
-            var objects = value as IDictionary<object, object>;
-            if (objects != null)
+            if (value is IDictionary<object, object> objects)
                 _root = objects;
         }
 

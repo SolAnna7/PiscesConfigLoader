@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Component
 {
+    [Obsolete]
     public class ConfigReaderComponent : MonoBehaviour, IConfigReader
     {
         public int Priority = 0;

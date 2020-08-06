@@ -11,6 +11,7 @@ using Random = UnityEngine.Random;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader
 {
+    [Obsolete]
     public static class GameConfig
     {
         private static IDictionary<object, object> _configMap = new Dictionary<object, object>();
