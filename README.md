@@ -1,4 +1,6 @@
-# PiscesConfigLoader 1.0
+# PiscesConfigLoader 0.9
+
+A configuration loader and reader tool for Unity
 
 ## Features
 
@@ -113,4 +115,7 @@ new ConfigBuilder()
 
 * Parse from JSON
 * Parse from XML
-* Load to and save from binary files 
+* Load to and save from binary files
+
+### 1.0
+No features are planned specifically for 1.0, but it wont be released until further testing and real life usage
