@@ -27,8 +27,8 @@ Unity 2018.4 or later
 
 ```
 git clone git@github.com:SolAnna7/PiscesConfigLoader.git
+cd PiscesConfigLoader/
 git submodule update --init --recursive
-git submodule update --recursive 
 ```
 
 * ~~Download from Unity Asset Store~~
