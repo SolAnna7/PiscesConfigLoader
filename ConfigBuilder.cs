@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Utils;
-using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 using UnityEngine;
 using YamlDotNet.Serialization;
 
@@ -82,7 +81,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
                     if (x.TryReadPath("meta", "priority") is int priority)
                         return priority;
                     return 0;
-                }).ForEach(map => _configMap = _configMap.Merge(map));
+                }).ToList().ForEach(map => _configMap = _configMap.Merge(map));
         }
 
         private void CheckBuildState()
