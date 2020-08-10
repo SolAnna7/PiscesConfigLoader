@@ -37,7 +37,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         {
             var configRoot = new ConfigBuilder().ParseString(TestYaml2, new ConfigBuilder.YamlTextConfigParser()).Build();
 
-            var nodeList = configRoot.Query("a_sequence").AsNodeList();
+            var nodeList = configRoot.Query("a_sequence").AsList();
 
             Assert.AreEqual(5, nodeList.Count);
             Assert.AreEqual("Item 0", nodeList[0].AsString());

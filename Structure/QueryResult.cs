@@ -7,19 +7,25 @@ using Random = System.Random;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
 {
+    /// <summary>
+    /// The result of querying a config node value
+    /// Can return different complex or simple types as result
+    /// </summary>
     public class QueryResult
     {
+        /// <summary>
+        /// The pathe where this result is in the config tree
+        /// </summary>
         public ConfigPath Path { get; }
-        public bool HasValue { get; } = true;
 
         private object _value;
 
-        private static readonly ExpressionParser ExpressionParser = new ExpressionParser();
-        private static readonly Random Random = new Random(0);
+        private static readonly ExpressionParser expressionParser = new ExpressionParser();
+        private static readonly Random random = new Random(0);
 
         static QueryResult()
         {
-            ExpressionParser.AddFunc("rand", inputs =>
+            expressionParser.AddFunc("rand", inputs =>
             {
                 if (inputs == null)
                     throw new ArgumentNullException(nameof(inputs));
@@ -32,7 +38,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
                 if (min > max)
                     throw new ArgumentException("The first parameter should be less then the second", nameof(inputs));
 
-                return Random.NextDouble() * (max - min) + min;
+                return random.NextDouble() * (max - min) + min;
             });
         }
 
@@ -41,14 +47,32 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             _value = value;
             Path = path;
             if (value == null)
-                HasValue = false;
+                throw new Exception("Result has no value!");
         }
 
+        /// <summary>
+        /// Returns value parsed to integer
+        /// </summary>
         public int AsInt() => int.Parse(AsString());
+
+        /// <summary>
+        /// Returns value parsed to long
+        /// </summary>
         public long AsLong() => long.Parse(AsString());
+
+        /// <summary>
+        /// Returns value parsed to float
+        /// </summary>
         public float AsFloat() => float.Parse(AsString());
+
+        /// <summary>
+        /// Returns value parsed to double
+        /// </summary>
         public double AsDouble() => double.Parse(AsString());
 
+        /// <summary>
+        /// Returns value parsed to Vector3 from "x y z" string format
+        /// </summary>
         public Vector3 AsVector3()
         {
             var str = AsString();
@@ -66,11 +90,18 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             throw new Exception($"Unable to parse Vector3 from string: {str}");
         }
 
+        /// <summary>
+        /// Returns the raw string value
+        /// </summary>
         public string AsString()
         {
             return _value as string ?? _value.ToString();
         }
 
+        /// <summary>
+        /// Returns the value parsed to ConfigPath using the "pathStep1.pathStep2.pathStep3..." string format
+        /// </summary>
+        /// <exception cref="ArgumentException">If the value is null or the path contains spaces</exception>
         public ConfigPath AsPath()
         {
             var pathStr = AsString();
@@ -83,18 +114,23 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             return new ConfigPath(pathStr.Split('.'));
         }
 
+        /// <summary>
+        /// Returns the value as a ConfigNode
+        /// </summary>
+        public ConfigNode AsNode() => new ConfigNode(_value as Dictionary<object, object>, Path);
 
-        public ConfigNode AsNode() => new ConfigNode(_value, Path);
-
-        public List<ConfigNode> AsNodeList()
+        /// <summary>
+        /// Returns the value as a QueryResult List
+        /// </summary>
+        public List<QueryResult> AsList()
         {
             if (_value is IList<object> objects)
             {
-                List<ConfigNode> result = new List<ConfigNode>();
+                List<QueryResult> result = new List<QueryResult>();
                 for (var index = 0; index < objects.Count; index++)
                 {
                     var x = objects[index];
-                    result.Add(new ConfigNode(x, Path.Add(index.ToString())));
+                    result.Add(new QueryResult(x, Path.Add(index.ToString())));
                 }
 
                 return result;
@@ -103,15 +139,22 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             throw new Exception("Query result is a leaf, not a node!");
         }
 
+        /// <summary>
+        /// Returns value parsed to ConfigExpressionBuilder
+        /// </summary>
         public ConfigExpressionBuilder AsExpression()
         {
             var asString = AsString();
 
-            var expression = ExpressionParser.EvaluateExpression(asString);
+            var expression = expressionParser.EvaluateExpression(asString);
 
             return new ConfigExpressionBuilder(expression);
         }
 
+        /// <summary>
+        /// Returns value parsed to RangeI from string format "min_max" or from a single number
+        /// </summary>
+        /// <exception cref="Exception"> if unable to parse</exception>
         public RangeI AsRangeI()
         {
             var asString = AsString();
@@ -122,7 +165,6 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
                 return new RangeI(int.Parse(nums[0]), int.Parse(nums[1]));
             }
 
-            // a sima számokat is beparsoljuk
             if (nums.Length == 1)
             {
                 return new RangeI(int.Parse(nums[0]), int.Parse(nums[0]));
@@ -131,55 +173,13 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             throw new Exception($"Unable to parse RangeI: {asString}");
         }
 
+        /// <summary>
+        /// Returns value parsed to Unity color from html color code
+        /// </summary>
         public Color AsColor()
         {
             var asString = AsString();
-            return CollectionColorUtils.ParseColorFromHtml(asString);
-        }
-
-
-        public class ConfigExpressionBuilder
-        {
-            internal ConfigExpressionBuilder(Expression expression)
-            {
-                _expression = expression ?? throw new ArgumentNullException(nameof(expression));
-                foreach (var key in expression.Parameters.Keys)
-                {
-                    _params.Add(key, null);
-                }
-            }
-
-            private readonly Expression _expression;
-            private readonly Dictionary<string, double?> _params = new Dictionary<string, double?>();
-
-            public ConfigExpressionBuilder SetParam(string paramName, double value)
-            {
-                _params[paramName] = value;
-                return this;
-            }
-
-            public ConfigExpressionBuilder WithConfig(ConfigNode configNode)
-            {
-                //azért csinálom ilyen furán, hogy módosítani lehessen a dictionary-t
-                foreach (var paramName in _expression.Parameters.Keys)
-                {
-                    configNode.TryQuery(paramName).IfPresent(queryResult => { _params[paramName] = queryResult.AsDouble(); });
-                }
-
-                return this;
-            }
-
-            public double Evaluate()
-            {
-                foreach (var param in _params)
-                {
-                    if (param.Value == null)
-                        throw new Exception($"parameter {param.Key} not set!");
-                    _expression.Parameters[param.Key].Value = param.Value.Value;
-                }
-
-                return _expression.Value;
-            }
+            return ConfigColorUtils.ParseColorFromHtml(asString);
         }
     }
 }

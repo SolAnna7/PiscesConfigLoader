@@ -1,34 +1,44 @@
 using System;
 using System.Collections.Generic;
+using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Utils
 {
     public static class CollectionExtensions
     {
-        public static IDictionary<object, object> MergeInto(
-            this IDictionary<object, object> targetDictionary,
-            IDictionary<object, object> sourceDictionary)
+        /// <summary>
+        /// Creates a new dictionary with the merge of the two input
+        /// If the same key exists in both, then if the values of the keys are dictionaries, than they are merged.
+        /// Otherwise the target value is overwritten.
+        /// </summary>
+        public static IDictionary<object, object> Merge(this IDictionary<object, object> targetDictionary, IDictionary<object, object> sourceDictionary)
         {
+            Dictionary<object, object> copy = new Dictionary<object, object>();
+            foreach (var targetDictionaryKey in targetDictionary.Keys)
+                copy[targetDictionaryKey] = targetDictionary[targetDictionaryKey];
+            
             foreach (object key in sourceDictionary.Keys)
             {
-                if (!targetDictionary.ContainsKey(key))
+                if (!copy.ContainsKey(key))
                 {
-                    targetDictionary.Add(key, sourceDictionary[key]);
+                    copy.Add(key, sourceDictionary[key]);
                 }
-                else if (targetDictionary[key] is IDictionary<object, object>)
+                else if (copy[key] is IDictionary<object, object>)
                 {
-                    targetDictionary[key] = MergeInto((IDictionary<object, object>) targetDictionary[key],
-                        (IDictionary<object, object>) sourceDictionary[key]);
+                    copy[key] = Merge((IDictionary<object, object>) copy[key], (IDictionary<object, object>) sourceDictionary[key]);
                 }
                 else
                 {
-                    targetDictionary[key] = sourceDictionary[key];
+                    copy[key] = sourceDictionary[key];
                 }
             }
-
-            return targetDictionary;
+            
+            return copy;
         }
 
+        /// <summary>
+        /// If the path is valid in the dictionary tree returns the value in the path, else null 
+        /// </summary>
         public static object TryReadPath(this IDictionary<object, object> dict, params string[] path)
         {
             ValidatePathArgs(dict, path);
@@ -42,6 +52,9 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Utils
             }
         }
 
+        /// <summary>
+        /// If the path is valid in the dictionary tree returns the value in the path, else throws an exception 
+        /// </summary>
         public static object ReadPath(this IDictionary<object, object> dict, params string[] path)
         {
             ValidatePathArgs(dict, path);
@@ -63,12 +76,12 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Utils
                     }
                     else
                     {
-                        throw new Exception($"Path is dead end! Wrong step: [{step}] in path [{string.Join(".", path)}]");
+                        throw new PathReadingException($"Path is dead end! Wrong step: [{step}] in path [{string.Join(".", path)}]");
                     }
                 }
                 else
                 {
-                    throw new Exception($"Path step not found! Wrong step: [{step}] in path [{string.Join(".", path)}]");
+                    throw new PathReadingException($"Path step not found! Wrong step: [{step}] in path [{string.Join(".", path)}]");
                 }
             }
 

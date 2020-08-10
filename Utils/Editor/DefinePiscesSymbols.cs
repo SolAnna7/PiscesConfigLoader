@@ -3,6 +3,9 @@ using UnityEditor;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Utils
 {
+    /// <summary>
+    /// Used to add a global #define about Pisces being present to the Unity project when first loaded
+    /// </summary>
     [InitializeOnLoad]
     public class DefinePiscesSymbols
     {

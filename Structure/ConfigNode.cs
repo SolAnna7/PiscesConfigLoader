@@ -7,57 +7,53 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
 {
+    /// <summary>
+    /// Node element of the config tree structure
+    /// </summary>
     [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-    public class ConfigNode : QueryResult
+    public class ConfigNode
     {
         private readonly IDictionary<object, object> _root;
+        private readonly ConfigPath _path;
 
-        internal ConfigNode(object value, ConfigPath path) : base(value, path)
+        internal ConfigNode(IDictionary<object, object> value, ConfigPath path)
         {
-            if (value is IDictionary<object, object> objects)
-                _root = objects;
+            _root = value ?? throw new ArgumentNullException(nameof(value));
+            _path = path;
         }
 
-        public QueryResult Query(ConfigPath path)
-        {
-            if (_root == null)
-            {
-                throw new Exception($"Node has no child elements! (path:{path})");
-            }
+        /// <summary>
+        /// Returns the value specified by the path relative to this node
+        /// </summary>
+        /// <param name="path">The relative path to the required value</param>
+        /// <returns>The value (of unknown type) if the path is valid</returns>
+        /// <exception cref="PathReadingException">If the path is not valid</exception>
+        /// <exception cref="LeafNodeException">If the node has ne children</exception>
+        public QueryResult Query(ConfigPath path) => new QueryResult(_root.ReadPath(path.Path), path);
 
-            return new QueryResult(_root.ReadPath(path.Path), path);
-        }
-
+        /// <summary>
+        /// Returns the value specified by the path relative to this node
+        /// </summary>
+        /// <param name="path">The relative path to the required value</param>
+        /// <returns>The value (of unknown type) if the path is valid</returns>
+        /// <exception cref="PathReadingException">If the path is not valid</exception>
         public QueryResult Query(params string[] path) => Query(new ConfigPath(path));
 
+        /// <summary>
+        /// Returns a maybe value specified by the path relative to this node
+        /// </summary>
+        /// <param name="path"></param>
         public MaybeQueryResult TryQuery(params string[] path) => TryQuery(new ConfigPath(path));
 
-        public MaybeQueryResult TryQuery(ConfigPath path)
-        {
-            if (_root == null)
-            {
-                throw new Exception("Node has no child elements!");
-            }
+        /// <summary>
+        /// Returns a maybe value specified by the path relative to this node
+        /// </summary>
+        /// <param name="path"></param>
+        public MaybeQueryResult TryQuery(ConfigPath path) => new MaybeQueryResult(_root.TryReadPath(path.Path), path);
 
-            return new MaybeQueryResult(new QueryResult(_root.TryReadPath(path.Path), path));
-        }
-
-        public static ConfigNode Empty()
-        {
-            return new ConfigNode(null, null);
-        }
-
-        public IEnumerable<string> GetKeys()
-        {
-            return _root.Keys.Select(k => k.ToString());
-        }
-
-        public ConfigNode UnionWith(ConfigNode other)
-        {
-            Dictionary<object, object> dict = new Dictionary<object, object>();
-            _root.Keys.ForEach(k => dict.Add(k, _root[k]));
-            other._root.Keys.ForEach(k => dict.Add(k, other._root[k]));
-            return new ConfigNode(dict, new ConfigPath("#UNION#"));
-        }
+        /// <summary>
+        /// Returns the keys of the children of this node
+        /// </summary>
+        public IEnumerable<string> GetKeys() => _root.Keys.Select(k => k.ToString());
     }
 }
