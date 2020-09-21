@@ -33,6 +33,9 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// </summary>
         public ConfigPath Add(params string[] steps) => new ConfigPath(Path.Concat(steps).ToArray());
 
+
+        public string Last => Path.Last();
+        
         /// <summary>
         /// Get a new empty path
         /// </summary>

@@ -13,12 +13,12 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
     public class ConfigNode
     {
         private readonly IDictionary<object, object> _root;
-        private readonly ConfigPath _path;
+        public ConfigPath Path { get; }
 
         internal ConfigNode(IDictionary<object, object> value, ConfigPath path)
         {
             _root = value ?? throw new ArgumentNullException(nameof(value));
-            _path = path;
+            Path = path;
         }
 
         /// <summary>
