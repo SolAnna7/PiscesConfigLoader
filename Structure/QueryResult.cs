@@ -18,7 +18,9 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// </summary>
         public ConfigPath Path { get; }
 
-        private object _value;
+        private readonly object _value;
+
+        private readonly ConfigNode _parentNode;
 
         private static readonly ExpressionParser expressionParser = new ExpressionParser();
         private static readonly Random random = new Random(0);
@@ -42,10 +44,11 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             });
         }
 
-        public QueryResult(object value, ConfigPath path)
+        public QueryResult(object value, ConfigNode parentNode, ConfigPath path)
         {
             _value = value;
             Path = path;
+            _parentNode = parentNode;
             if (value == null)
                 throw new Exception("Result has no value!");
         }
@@ -90,6 +93,18 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
             throw new Exception($"Unable to parse Vector3 from string: {str}");
         }
 
+        public Vector2 AsVector2()
+        {
+            var str = AsString();
+            var coordinateStrs = str.Split(' ');
+
+            if (coordinateStrs.Length == 2)
+                return new Vector2(
+                    float.Parse(coordinateStrs[0]),
+                    float.Parse(coordinateStrs[1]));
+            throw new Exception($"Unable to parse Vector2 from string: {str}");
+        }
+
         /// <summary>
         /// Returns the raw string value
         /// </summary>
@@ -97,6 +112,16 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         {
             return _value as string ?? _value.ToString();
         }
+
+        /// <summary>
+        /// Returns value parsed to the specified enum type
+        /// </summary>
+        public T AsEnum<T>() where T : Enum
+        {
+            var asString = AsString();
+            return (T) Enum.Parse(typeof(T), asString, true);
+        }
+
 
         /// <summary>
         /// Returns the value parsed to ConfigPath using the "pathStep1.pathStep2.pathStep3..." string format
@@ -120,6 +145,18 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         public ConfigNode AsNode() => new ConfigNode(_value as Dictionary<object, object>, Path);
 
         /// <summary>
+        /// Returns the value as a MutableConfigNode
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception">If the config tree is not mutable</exception>
+        public ConfigNode AsMutableNode()
+        {
+            if (_parentNode is MutableConfigNode mutableNode)
+                return new MutableConfigNode(_value as Dictionary<object, object>, Path, mutableNode);
+            throw new Exception("Trying to cast immutable node to mutable!");
+        }
+
+        /// <summary>
         /// Returns the value as a QueryResult List
         /// </summary>
         public List<QueryResult> AsList()
@@ -130,7 +167,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
                 for (var index = 0; index < objects.Count; index++)
                 {
                     var x = objects[index];
-                    result.Add(new QueryResult(x, Path.Add(index.ToString())));
+                    result.Add(new QueryResult(x, _parentNode, Path.Add(index.ToString())));
                 }
 
                 return result;

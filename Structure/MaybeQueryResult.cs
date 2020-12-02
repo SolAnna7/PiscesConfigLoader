@@ -9,14 +9,14 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
     {
         private readonly QueryResult _queryResult;
 
-        public MaybeQueryResult(object value, ConfigPath path)
+        public MaybeQueryResult(object value, ConfigNode parentNode, ConfigPath path)
         {
             if (value == null)
                 IsPresent = false;
             else
             {
                 IsPresent = true;
-                _queryResult = new QueryResult(value, path);
+                _queryResult = new QueryResult(value, parentNode, path);
             }
         }
 
@@ -43,7 +43,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// Runs function with QueryResult as input if value is not null
         /// Returns function result or default value
         /// </summary>
-        public Tr IfPresentGet<Tr>(Func<QueryResult, Tr> actionIfPresent, Tr defaultValue) => IsPresent ? actionIfPresent(_queryResult) : defaultValue;
+        public Tr IfPresentGet<Tr>(Func<QueryResult, Tr> actionIfPresent, Tr defaultValue = default) => IsPresent ? actionIfPresent(_queryResult) : defaultValue;
 
         /// <summary>
         /// Runs action with QueryResult as input if value is not null else runs else action

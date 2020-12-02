@@ -12,7 +12,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
     [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
     public class ConfigNode
     {
-        private readonly IDictionary<object, object> _root;
+        protected readonly IDictionary<object, object> _root;
         public ConfigPath Path { get; }
 
         internal ConfigNode(IDictionary<object, object> value, ConfigPath path)
@@ -28,7 +28,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// <returns>The value (of unknown type) if the path is valid</returns>
         /// <exception cref="PathReadingException">If the path is not valid</exception>
         /// <exception cref="LeafNodeException">If the node has ne children</exception>
-        public QueryResult Query(ConfigPath path) => new QueryResult(_root.ReadPath(path.Path), path);
+        public QueryResult Query(ConfigPath path) => new QueryResult(_root.ReadPath(path.Path), this, path);
 
         /// <summary>
         /// Returns the value specified by the path relative to this node
@@ -41,14 +41,12 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// <summary>
         /// Returns a maybe value specified by the path relative to this node
         /// </summary>
-        /// <param name="path"></param>
         public MaybeQueryResult TryQuery(params string[] path) => TryQuery(new ConfigPath(path));
 
         /// <summary>
         /// Returns a maybe value specified by the path relative to this node
         /// </summary>
-        /// <param name="path"></param>
-        public MaybeQueryResult TryQuery(ConfigPath path) => new MaybeQueryResult(_root.TryReadPath(path.Path), path);
+        public MaybeQueryResult TryQuery(ConfigPath path) => new MaybeQueryResult(_root.TryReadPath(path.Path), this, path);
 
         /// <summary>
         /// Returns the keys of the children of this node
