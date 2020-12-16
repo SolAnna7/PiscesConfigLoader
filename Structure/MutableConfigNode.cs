@@ -7,7 +7,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
     {
         internal MutableConfigNode(IDictionary<object, object> value, ConfigPath path, MutableConfigNode parent) : base(value, path)
         {
-            if (parent != null)
+            if (parent?.ValueChanged != null)
                 ValueChanged += () => parent.ValueChanged.Invoke();
         }
 

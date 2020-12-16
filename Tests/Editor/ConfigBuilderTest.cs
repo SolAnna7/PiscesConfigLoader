@@ -18,7 +18,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         {
             var configRoot =
                 new ConfigBuilder()
-                    .ParseString(TestYamlStr, new ConfigBuilder.YamlTextConfigParser())
+                    .ParseInput(TestYamlStr, new ConfigBuilder.YamlTextConfigParser())
                     .Build();
             Assert.AreEqual(1, configRoot.GetKeys().Count());
             Assert.AreEqual(123, configRoot.Query("aaa", "bbb").AsInt());
@@ -30,7 +30,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         {
             var configRoot =
                 new ConfigBuilder()
-                    .ParseTextResourceFiles("TestYamlFiles/TestYaml1", new ConfigBuilder.YamlTextConfigParser())
+                    .ParseInput(new ConfigBuilder.ConfigResourceReader("TestYamlFiles/TestYaml1"), new ConfigBuilder.YamlTextConfigParser())
                     .Build();
             Assert.AreEqual(1, configRoot.GetKeys().Count());
             Assert.AreEqual(987, configRoot.Query("xxx", "yyy").AsInt());
@@ -42,9 +42,8 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         {
             var configRoot =
                 new ConfigBuilder()
-                    .ParseTextResourceFiles("TestYamlFiles", new ConfigBuilder.YamlTextConfigParser())
+                    .ParseInput(new ConfigBuilder.ConfigResourceReader("TestYamlFiles"), new ConfigBuilder.YamlTextConfigParser())
                     .Build();
-            Assert.AreEqual(2, configRoot.GetKeys().Count());
             Assert.AreEqual(987, configRoot.Query("xxx", "yyy").AsInt());
             Assert.AreEqual("www", configRoot.Query("xxx", "zzz").AsString());
             Assert.AreEqual(919, configRoot.Query("xxx", "www").AsInt());
@@ -93,11 +92,11 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         {
             var config1 =
                 new ConfigBuilder()
-                    .ParseString("maybe?", new TestConfigParser())
+                    .ParseInput("maybe?", new TestConfigParser())
                     .Build();
             var config2 =
                 new ConfigBuilder()
-                    .ParseString("please!", new TestConfigParser())
+                    .ParseInput("please!", new TestConfigParser())
                     .Build();
 
             Assert.AreEqual(1, config1.GetKeys().Count());

@@ -149,7 +149,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception">If the config tree is not mutable</exception>
-        public ConfigNode AsMutableNode()
+        public MutableConfigNode AsMutableNode()
         {
             if (_parentNode is MutableConfigNode mutableNode)
                 return new MutableConfigNode(_value as Dictionary<object, object>, Path, mutableNode);

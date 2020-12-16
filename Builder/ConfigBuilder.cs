@@ -19,7 +19,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
         private bool _isBuilt = false;
         private IConfigSynchronizationStrategy _synchStrategy;
         private IConfigSynchronizationSerializer _synchSerializer;
-        private TextWriter _synchWriter;
+        private Func<TextWriter> _synchWriter;
 
 
         public ConfigBuilder()
@@ -33,6 +33,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
         /// <param name="resourcePath">The path to parse resources at</param>
         /// <param name="parser">The type of parser to use</param>
         /// <returns>This builder instance</returns>
+        [Obsolete]
         public ConfigBuilder ParseTextResourceFiles(string resourcePath, ITextConfigParser parser)
         {
             if (resourcePath == null)
@@ -55,6 +56,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
         /// <param name="str">The string to parse</param>
         /// <param name="parser">The type of parser to use</param>
         /// <returns>This builder instance</returns>
+        [Obsolete]
         public ConfigBuilder ParseString(string str, ITextConfigParser parser)
         {
             if (str == null)
@@ -64,6 +66,42 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
 
             CheckBuildState();
             ParseAndLoadConfigs(new[] {str}, parser);
+            return this;
+        }
+
+        /// <summary>
+        /// Parses the given string
+        /// The parsed config is merged into the already loaded tree
+        /// </summary>
+        /// <param name="str">The string to parse</param>
+        /// <param name="parser">The type of parser to use</param>
+        /// <returns>This builder instance</returns>
+        public ConfigBuilder ParseInput(string str, ITextConfigParser parser)
+        {
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+            if (parser == null)
+                throw new ArgumentNullException(nameof(parser));
+
+            CheckBuildState();
+            ParseAndLoadConfigs(new[] {str}, parser);
+            return this;
+        }
+
+
+        /// <summary>
+        /// Reads the input with the IConfigInputReader and parses it with the ITextConfigParser
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If either argument is null</exception>
+        public ConfigBuilder ParseInput(IConfigInputReader reader, ITextConfigParser parser)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+            if (parser == null)
+                throw new ArgumentNullException(nameof(parser));
+
+            CheckBuildState();
+            ParseAndLoadConfigs(reader.Read(), parser);
             return this;
         }
 
@@ -79,9 +117,9 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
             return this;
         }
 
-        public ConfigBuilder SetSynchronization(IConfigSynchronizationStrategy strategy, IConfigSynchronizationSerializer serializer, TextWriter writer)
+        public ConfigBuilder SetSynchronization(IConfigSynchronizationStrategy strategy, IConfigSynchronizationSerializer serializer, Func<TextWriter> writerProvider)
         {
-            _synchWriter = writer ?? throw new ArgumentNullException(nameof(writer));
+            _synchWriter = writerProvider ?? throw new ArgumentNullException(nameof(writerProvider));
             _synchSerializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _synchStrategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
 
@@ -109,7 +147,13 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
         {
             if (_synchSerializer == null)
                 return;
-            _synchStrategy.Init(() => _synchSerializer.Serialize(_configMap, _synchWriter));
+            _synchStrategy.Init(() =>
+            {
+                using (var textWriter = _synchWriter.Invoke())
+                {
+                    _synchSerializer.Serialize(_configMap, textWriter);
+                }
+            });
             mutableConfigNode.ValueChanged += () => _synchStrategy.DataChanged();
         }
 
@@ -161,6 +205,61 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
 
             public Dictionary<object, object> ParseText(string text) => _deserializer.Deserialize<Dictionary<object, object>>(text);
         }
+
+        public interface IConfigInputReader
+        {
+            string[] Read();
+        }
+
+        public class ConfigResourceReader : IConfigInputReader
+        {
+            private readonly string _resourcePath;
+
+            public ConfigResourceReader(string resourcePath)
+            {
+                _resourcePath = resourcePath ?? throw new ArgumentNullException(nameof(resourcePath));
+            }
+
+            public string[] Read()
+            {
+                var configAssets = Resources.LoadAll<TextAsset>(_resourcePath);
+                if (configAssets == null || configAssets.Length == 0)
+                    throw new Exception($"No text resources found on path {_resourcePath}");
+                return configAssets.Select(c => c.text).ToArray();
+            }
+        }
+
+        public class ConfigFileReader : IConfigInputReader
+        {
+            private readonly string _relativeFilePath;
+
+            public ConfigFileReader(string relativeFilePath)
+            {
+                _relativeFilePath = relativeFilePath ?? throw new ArgumentNullException(nameof(relativeFilePath));
+                if (!File.Exists(_relativeFilePath))
+                    throw new Exception($"No file found on path {relativeFilePath}");
+            }
+
+            public string[] Read() => new[] {File.ReadAllText(_relativeFilePath)};
+        }
+
+        // public class ConfigDictionaryReader : IConfigInputReader
+        // {
+        //     private readonly string _relativeFilePath;
+        //
+        //     public ConfigDictionaryReader(string relativeFilePath)
+        //     {
+        //         _relativeFilePath = relativeFilePath ?? throw new ArgumentNullException(nameof(relativeFilePath));
+        //     }
+        //
+        //     public string[] Read()
+        //     {
+        //         var configAssets = Resources.LoadAll<TextAsset>(_relativeFilePath);
+        //         if (configAssets == null || configAssets.Length == 0)
+        //             throw new Exception($"No text resources found on path {_relativeFilePath}");
+        //         return configAssets.Select(c => c.text).ToArray();
+        //     }
+        // }
 
         #endregion
     }

@@ -51,7 +51,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
             StringWriter writer = new StringWriter();
             var config = new ConfigBuilder()
                 .ParseTextResourceFiles("TestYamlFiles/MutableTest", new ConfigBuilder.YamlTextConfigParser())
-                .SetSynchronization(outerCommandSynchronizationStrategy, new YamlSerializer(), writer)
+                .SetSynchronization(outerCommandSynchronizationStrategy, new YamlSerializer(), () => writer)
                 .BuildMutable();
 
             config.AddValue("eee", "yay");
