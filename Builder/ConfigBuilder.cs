@@ -231,35 +231,31 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader
 
         public class ConfigFileReader : IConfigInputReader
         {
-            private readonly string _relativeFilePath;
+            private readonly string _filePath;
 
-            public ConfigFileReader(string relativeFilePath)
+            public ConfigFileReader(string filePath)
             {
-                _relativeFilePath = relativeFilePath ?? throw new ArgumentNullException(nameof(relativeFilePath));
-                if (!File.Exists(_relativeFilePath))
-                    throw new Exception($"No file found on path {relativeFilePath}");
+                _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+                if (!File.Exists(_filePath))
+                    throw new Exception($"No file found on path {filePath}");
             }
 
-            public string[] Read() => new[] {File.ReadAllText(_relativeFilePath)};
+            public string[] Read() => new[] {File.ReadAllText(_filePath)};
         }
 
-        // public class ConfigDictionaryReader : IConfigInputReader
-        // {
-        //     private readonly string _relativeFilePath;
-        //
-        //     public ConfigDictionaryReader(string relativeFilePath)
-        //     {
-        //         _relativeFilePath = relativeFilePath ?? throw new ArgumentNullException(nameof(relativeFilePath));
-        //     }
-        //
-        //     public string[] Read()
-        //     {
-        //         var configAssets = Resources.LoadAll<TextAsset>(_relativeFilePath);
-        //         if (configAssets == null || configAssets.Length == 0)
-        //             throw new Exception($"No text resources found on path {_relativeFilePath}");
-        //         return configAssets.Select(c => c.text).ToArray();
-        //     }
-        // }
+        public class ConfigDictionaryReader : IConfigInputReader
+        {
+            private readonly string _directoryPath;
+        
+            public ConfigDictionaryReader(string directoryPath)
+            {
+                _directoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
+                if (!Directory.Exists(_directoryPath))
+                    throw new Exception($"No directory found on path {directoryPath}");
+            }
+        
+            public string[] Read() => Directory.GetFiles(_directoryPath).Select(File.ReadAllText).ToArray();
+        }
 
         #endregion
     }
