@@ -8,7 +8,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         [Test]
         public void TestConfigParse()
         {
-            var configRoot = new ConfigBuilder().ParseString(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
+            var configRoot = new ConfigBuilder().ParseInput(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
 
             Assert.AreEqual("value", configRoot.Query(new ConfigPath("a_nested_map", "key")).AsString());
             Assert.AreEqual(11, configRoot.Query(new ConfigPath("a_nested_map", "2")).AsInt());
@@ -25,8 +25,8 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         public void TestConfigParseMultiple()
         {
             var configRoot = new ConfigBuilder()
-                .ParseString(TestYaml, new ConfigBuilder.YamlTextConfigParser())
-                .ParseString(TestYaml2, new ConfigBuilder.YamlTextConfigParser())
+                .ParseInput(TestYaml, new ConfigBuilder.YamlTextConfigParser())
+                .ParseInput(TestYaml2, new ConfigBuilder.YamlTextConfigParser())
                 .Build();
             Assert.AreEqual("another value", configRoot.Query(new ConfigPath("a_nested_map", "key")).AsString());
         }
@@ -35,7 +35,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         [Test]
         public void TestConfigParseSequence()
         {
-            var configRoot = new ConfigBuilder().ParseString(TestYaml2, new ConfigBuilder.YamlTextConfigParser()).Build();
+            var configRoot = new ConfigBuilder().ParseInput(TestYaml2, new ConfigBuilder.YamlTextConfigParser()).Build();
 
             var nodeList = configRoot.Query("a_sequence").AsList();
 
@@ -48,7 +48,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         [Test]
         public void TestConfigParseExpression()
         {
-            var configRoot = new ConfigBuilder().ParseString(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
+            var configRoot = new ConfigBuilder().ParseInput(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
 
             {
                 var expression1 = configRoot.Query("expression1").AsExpression();
@@ -69,7 +69,7 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Tests
         [Test]
         public void TestConfigRandomFunction()
         {
-            var configRoot = new ConfigBuilder().ParseString(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
+            var configRoot = new ConfigBuilder().ParseInput(TestYaml, new ConfigBuilder.YamlTextConfigParser()).Build();
 
             var expression = configRoot.Query("expression4").AsExpression();
 
