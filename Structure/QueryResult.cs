@@ -57,6 +57,11 @@ namespace SnowFlakeGamesAssets.PiscesConfigLoader.Structure
         /// Returns value parsed to integer
         /// </summary>
         public int AsInt() => int.Parse(AsString());
+        
+        /// <summary>
+        /// Returns value parsed to bool
+        /// </summary>
+        public bool AsBool() => bool.Parse(AsString());
 
         /// <summary>
         /// Returns value parsed to long
